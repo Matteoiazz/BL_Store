@@ -215,7 +215,7 @@ address { font-style: normal; }
 .store__facts dd a:hover { text-decoration-color: var(--tube); }
 .store__cta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: auto; padding-top: 24px; }
 .map { position: relative; margin: 0; border-radius: 4px; overflow: hidden; min-height: 360px; background: var(--wall-2); border: 1px solid var(--line); }
-.map iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; filter: grayscale(1) invert(.92) contrast(.92) brightness(.9); }
+
 .map figcaption { position: absolute; left: 16px; bottom: 16px; display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 2px;
   background: var(--tube); color: var(--void); font-weight: 800; font-stretch: 80%; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; }
 
@@ -422,10 +422,26 @@ address { font-style: normal; }
   40% { color: transparent; text-shadow: none; }
   56%, 100% { color: var(--sky); text-shadow: 0 0 22px rgba(120,208,232,.55), 0 0 60px rgba(120,208,232,.3); } }
 @media (prefers-reduced-motion: reduce) { .foot__word.is-on .bl { animation: none; color: var(--sky); } }
-/* map placeholder: Google loads only when asked */
-.map__load { position: absolute; inset: 0; width: 100%; display: grid; place-content: center; justify-items: center; gap: 6px; padding: 24px; border: 0; cursor: pointer; text-align: center;
-  color: var(--tube); background: radial-gradient(60% 60% at 50% 45%, rgba(120,208,232,.10), transparent 70%), var(--wall-2); }
-.map__load .ico { width: 34px; height: 34px; color: var(--sky); }
-.map__load b { font-weight: 900; font-stretch: 75%; font-size: 20px; letter-spacing: .06em; text-transform: uppercase; }
-.map__load small { color: var(--mute); font-size: 13px; }
-.map__load:hover b { color: var(--sky); }
+/* ---------- map: drawn from OpenStreetMap data, no third-party requests ---------- */
+.map__link { position: absolute; inset: 0; display: block; }
+.map__svg { width: 100%; height: 100%; display: block; background: #0f0f11; }
+.m-park { fill: #15181a; }
+.m-bld { fill: #1b1b1f; stroke: #232328; stroke-width: 1; }
+.m-river { fill: none; stroke: rgba(120,208,232,.22); stroke-width: 12; stroke-linecap: round; }
+.m-minor { fill: none; stroke: #2c2d32; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.m-street { fill: none; stroke: #45464c; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+.m-ped { fill: none; stroke: #5d5f66; stroke-width: 5; stroke-dasharray: 2 7; stroke-linecap: round; }
+.m-main { fill: none; stroke: #7a7c83; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+.m-shop { fill: none; stroke: var(--tube); stroke-width: 7; stroke-linecap: round; filter: drop-shadow(0 0 6px rgba(220,232,255,.5)); }
+.lbl { fill: var(--mute); font: 700 13px var(--ui); font-stretch: 80%; letter-spacing: .14em; text-transform: uppercase; text-anchor: middle; paint-order: stroke; stroke: #0f0f11; stroke-width: 4px; }
+.lbl--shop { fill: var(--tube); }
+.m-pin__halo { fill: rgba(120,208,232,.16); animation: ping 2.6s var(--out) infinite; transform-box: fill-box; transform-origin: center; }
+.m-pin__ring { fill: #0f0f11; stroke: var(--sky); stroke-width: 3; }
+.m-pin__dot { fill: var(--sky); }
+.m-pin__label { fill: var(--sky); font: 400 34px var(--gothic); paint-order: stroke; stroke: #0f0f11; stroke-width: 6px; }
+.m-pin__sub { fill: var(--tube); font: 800 13px var(--ui); font-stretch: 80%; letter-spacing: .12em; text-transform: uppercase; paint-order: stroke; stroke: #0f0f11; stroke-width: 4px; }
+.m-osm { fill: #6b6d73; font: 600 11px var(--ui); }
+@keyframes ping { 0% { scale: .4; opacity: 1; } 80%, 100% { scale: 1.3; opacity: 0; } }
+.map__link:hover .m-shop { stroke: var(--sky); }
+.map figcaption { pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .m-pin__halo { animation: none; } }
