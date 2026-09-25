@@ -190,10 +190,6 @@ html { scrollbar-color: var(--line) var(--void); scrollbar-width: thin; }
 .swing b.is-ask { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
 .card__btn:hover .swing { animation: sway 1.2s var(--out); }
 @keyframes sway { 0% { rotate: -5deg; } 25% { rotate: 7deg; } 50% { rotate: -4deg; } 75% { rotate: 2deg; } 100% { rotate: -5deg; } }
-.card.is-wide .card__btn { height: 100%; display: grid; grid-template-rows: minmax(0, 1fr) auto; }
-.card.is-wide .card__img { aspect-ratio: auto; height: 100%; min-height: 0; }
-.card.is-wide .card__img img, .card.is-solo .card__img img { position: absolute; inset: 0; object-fit: contain; }
-.card.is-solo .card__img { aspect-ratio: 2 / 1; max-height: 42svh; width: 100%; }
 .card.is-out .card__img img { filter: grayscale(1) brightness(.7); }
 .grid__empty { padding: 40px 0; font-size: 20px; color: var(--chrome); }
 
@@ -364,3 +360,33 @@ address { font-style: normal; }
 .box.is-dim .garment__frame::after { opacity: .05; box-shadow: none; }
 /* full looks (tee + jeans) are tall: give them more height so they are not tiny */
 @media (min-width: 761px) { .garment__frame.is-tall { height: clamp(260px, 54svh, 540px); } }
+
+/* ---------- the studio sweep: the shop's other set, light grey paper ---------- */
+.light {
+  --ink: #0b0b0c; --ink-2: #3b3c40; --ink-3: #5b5d62; --rule: #c4c4c0;
+  background: linear-gradient(to bottom, #ecece9, #e2e2df 60%, #d9d9d5);
+  color: var(--ink);
+}
+.light ::selection { background: var(--ink); color: #fff; }
+.light :focus-visible { outline-color: var(--ink); }
+.light .head__count { color: var(--ink-2); }
+.light .head__count b { color: var(--ink); }
+.light .head__note { color: var(--ink-3); }
+.light .filters { border-bottom-color: var(--rule); }
+.light .chip { border-color: var(--rule); color: var(--ink-2); }
+.light .chip:hover { border-color: var(--ink); color: var(--ink); }
+.light .chip[aria-selected="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
+.light .card__btn:focus-visible { outline-color: var(--ink); }
+.light .card__img { background: #e2e2df; box-shadow: 0 1px 0 rgba(0,0,0,.04); }
+.light .card__img[data-ground="black"] { background: #0c0c0d; }
+.light .card__no { color: var(--ink-3); }
+.light .card__variant { color: var(--ink-3); }
+.light .card__tag--out { background: var(--ink); color: #fff; }
+.light .swing b { background: #fff; }
+.light .grid__empty { color: var(--ink-2); }
+.light .lines { border-top-color: var(--ink); }
+.light .line { border-bottom-color: var(--rule); }
+.light .line__v { color: var(--ink-2); }
+.light .line:hover { background: var(--ink); color: #fff; }
+.light .line:hover .line__v { color: #fff; }
+.light .ico-cross { fill: var(--ink); }

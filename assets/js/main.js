@@ -232,27 +232,11 @@ document.documentElement.classList.add("js");
     return li;
   }
 
-  /* no row ends on an empty cell: the last card stretches to close it */
-  function closeRow() {
-    const items = $$(".card", grid);
-    items.forEach(li => { li.classList.remove("is-wide", "is-solo"); li.style.gridColumn = ""; });
-    const last = items[items.length - 1];
-    if (!last || items.length < 2) return;
-    const cols = getComputedStyle(grid).gridTemplateColumns.split(" ").length;
-    const at = (items.length - 1) % cols;
-    const span = cols - at;
-    last.style.gridColumn = `span ${span}`;
-    if (span === cols && span > 1) last.classList.add("is-solo");
-    else if (span > 1) last.classList.add("is-wide");
-  }
-  let rT; addEventListener("resize", () => { clearTimeout(rT); rT = setTimeout(closeRow, 120); });
-
   function render() {
     visible = current === "all" ? CAT : CAT.filter(p => p.cat === current);
     grid.innerHTML = "";
     visible.forEach((p, i) => grid.appendChild(card(p, i)));
     empty.hidden = visible.length > 0;
-    closeRow();
   }
   function select(id) {
     current = id;
