@@ -21,6 +21,7 @@ document.documentElement.classList.add("js");
   const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const pad = n => String(n).padStart(2, "0");
   const euro = p => p == null ? null : new Intl.NumberFormat("it-IT", { style: "currency", currency: "EUR", minimumFractionDigits: p % 1 ? 2 : 0 }).format(p);
+  const pics = p => (p.imgs && p.imgs.length ? p.imgs : [p.img]).filter(Boolean);
   const wa = text => `https://wa.me/${S.phone.replace(/\D/g, "")}${text ? "?text=" + encodeURIComponent(text) : ""}`;
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const finePointer = matchMedia("(pointer: fine)").matches;
@@ -150,6 +151,7 @@ document.documentElement.classList.add("js");
       s.style.left = `${e.clientX - r.left + (Math.random() * 16 - 8)}px`;
       s.style.top = `${e.clientY - r.top + (Math.random() * 16 - 8)}px`;
       s.style.setProperty("--s", `${6 + Math.random() * 10}px`);
+      if (Math.random() < .3) s.style.background = "var(--sky)";
       s.addEventListener("animationend", () => { s.remove(); live--; });
       box.appendChild(s);
     });
@@ -213,7 +215,8 @@ document.documentElement.classList.add("js");
     li.innerHTML = `
       <button class="card__btn" type="button" aria-label="${esc(p.name)}, ${esc(p.variant)}. ${price || "Prezzo in store"}">
         <div class="card__img" data-ground="${esc(p.ground)}">
-          <img src="${esc(p.img)}" alt="${esc(p.name)}, ${esc(p.variant)}" loading="${i < 5 ? "eager" : "lazy"}" width="640" height="640">
+          <img src="${esc(pics(p)[0])}" alt="${esc(p.name)}, ${esc(p.variant)}" loading="${i < 5 ? "eager" : "lazy"}" width="640" height="640">
+          ${pics(p)[1] ? `<img class="card__alt" src="${esc(pics(p)[1])}" alt="" loading="lazy" width="640" height="640"><span class="card__count" aria-hidden="true">${pics(p).length} foto</span>` : ""}
           ${tag}
           <span class="swing" aria-hidden="true"><b class="${price ? "" : "is-ask"}">${price || "In store"}</b></span>
         </div>
@@ -256,8 +259,12 @@ document.documentElement.classList.add("js");
 
   function fillLocker(p) {
     const price = euro(p.price);
-    L("img").src = p.img; L("img").alt = `${p.name}, ${p.variant}`;
-    L("img").parentElement.style.background = p.ground === "black" ? "#0c0c0d" : p.ground === "wood" ? "#b98a5e" : "";
+    const list = pics(p), gal = L("gallery"), thumbs = L("thumbs");
+    gal.innerHTML = list.map((u, i) => `<img src="${esc(u)}" alt="${esc(p.name)}, foto ${i + 1} di ${list.length}" width="640" height="640" ${i ? 'loading="lazy"' : ""}>`).join("");
+    gal.scrollLeft = 0;
+    thumbs.innerHTML = list.length > 1 ? list.map((u, i) => `<button type="button" class="thumb${i ? "" : " is-on"}" data-i="${i}" aria-label="Foto ${i + 1}"><img src="${esc(u)}" alt=""></button>`).join("") : "";
+    thumbs.hidden = list.length < 2;
+    gal.parentElement.style.background = p.ground === "black" ? "#0c0c0d" : p.ground === "wood" ? "#b98a5e" : "";
     L("brand").textContent = p.brand || "";
     L("brand").hidden = !p.brand;
     L("name").textContent = p.name;
@@ -277,6 +284,16 @@ document.documentElement.classList.add("js");
     roll(L("num"), pad(p.n), { from: prev || "00" });
   }
   const step = d => openLocker(visible[(lockerIdx + d + visible.length) % visible.length]);
+  // gallery: swipe on phones, thumbnails everywhere
+  const gal = L("gallery"), thumbs = L("thumbs");
+  thumbs.addEventListener("click", e => {
+    const b = e.target.closest("[data-i]"); if (!b) return;
+    gal.scrollTo({ left: gal.clientWidth * +b.dataset.i, behavior: reduce ? "auto" : "smooth" });
+  });
+  gal.addEventListener("scroll", () => {
+    const i = Math.round(gal.scrollLeft / Math.max(1, gal.clientWidth));
+    $$(".thumb", thumbs).forEach((t, k) => t.classList.toggle("is-on", k === i));
+  }, { passive: true });
   $("[data-close]", locker).addEventListener("click", () => locker.close());
   $("[data-prev]", locker).addEventListener("click", () => step(-1));
   $("[data-next]", locker).addEventListener("click", () => step(1));

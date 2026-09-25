@@ -9,7 +9,7 @@
   const uid = () => (crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()));
 
   let data = { items: [], store: {} };
-  let seeded = false, show = "all", editing = null, pendingFile = null;
+  let seeded = false, show = "all", editing = null, photos = [];
 
   /* ---------- api ---------- */
   async function api(path, opts = {}) {
@@ -98,7 +98,7 @@
         <img class="item__img" src="${esc(src(it.img))}" alt="" loading="lazy">
         <div>
           <div class="item__name"></div>
-          <div class="item__meta"><span class="item__price">${euro(it.price)}</span>${it.sizes?.length ? `<span>${esc(it.sizes.join(" · "))}</span>` : ""}${it.status === "new" ? `<span class="tag tag--new">Nuovo</span>` : it.status === "out" ? `<span class="tag tag--out">Esaurito</span>` : ""}</div>
+          <div class="item__meta"><span class="item__price">${euro(it.price)}</span>${it.imgs?.length > 1 ? `<span>${it.imgs.length} foto</span>` : ""}${it.sizes?.length ? `<span>${esc(it.sizes.join(" · "))}</span>` : ""}${it.status === "new" ? `<span class="tag tag--new">Nuovo</span>` : it.status === "out" ? `<span class="tag tag--out">Esaurito</span>` : ""}</div>
         </div>
         <span class="item__num">#${String(it.n).padStart(2, "0")}</span>`;
       $(".item__name", li).textContent = it.name;
@@ -131,15 +131,30 @@
     drawSizes([...sel, v]); inp.value = "";
   });
 
-  function setPreview(url) {
-    const img = $("[data-preview]");
-    img.hidden = !url; if (url) img.src = url;
-    $("[data-photo-empty]").hidden = !!url;
-    $("[data-photo-change]").hidden = !url;
+  /* photos of the garment: saved ones are {url}, new ones {file, preview}; the first is the cover */
+  const MAX_PHOTOS = 8;
+  const photosEl = $("[data-photos]"), fileInput = $("[data-file]");
+  const photoList = it => (it?.imgs?.length ? it.imgs : it?.img ? [it.img] : []).map(url => ({ url }));
+  function drawPhotos() {
+    photosEl.innerHTML = photos.map((ph, i) => `
+      <li class="ph${i === 0 ? " is-cover" : ""}">
+        <img src="${esc(ph.preview || src(ph.url))}" alt="Foto ${i + 1}">
+        ${i === 0 ? `<span class="ph__cover">Copertina</span>` : `<button type="button" class="ph__btn ph__star" data-cover="${i}" aria-label="Usa come copertina"><svg class="ico"><use href="#i-star"/></svg></button>`}
+        <button type="button" class="ph__btn ph__del" data-del="${i}" aria-label="Togli questa foto"><svg class="ico"><use href="#i-close"/></svg></button>
+      </li>`).join("") + (photos.length < MAX_PHOTOS ? `
+      <li><button type="button" class="ph__add" data-add><svg class="ico ico--lg"><use href="#i-cam"/></svg><b>${photos.length ? "Aggiungi" : "Aggiungi foto"}</b><small>Scatta o scegli</small></button></li>` : "");
+    $("[data-photo-count]").textContent = photos.length ? `${photos.length}/${MAX_PHOTOS}` : "";
   }
+  photosEl.addEventListener("click", e => {
+    const t = e.target.closest("button"); if (!t) return;
+    if (t.hasAttribute("data-add")) return fileInput.click();
+    if (t.dataset.cover) { const [ph] = photos.splice(+t.dataset.cover, 1); photos.unshift(ph); }
+    if (t.dataset.del) photos.splice(+t.dataset.del, 1);
+    drawPhotos();
+  });
 
   function openSheet(it) {
-    editing = it || null; pendingFile = null;
+    editing = it || null; photos = photoList(it);
     form.reset(); $("[data-form-err]").textContent = "";
     const n = it ? it.n : Math.max(0, ...data.items.map(i => i.n)) + 1;
     $("[data-sheet-title]").textContent = it ? "Modifica capo" : "Nuovo arrivo";
@@ -153,16 +168,17 @@
     (form.querySelector(`input[name=cat][value="${it?.cat || "maglie"}"]`) || {}).checked = true;
     form.querySelector(`input[name=status][value="${it?.status || "new"}"]`).checked = true;
     drawSizes(it?.sizes || []);
-    setPreview(it ? src(it.img) : null);
+    drawPhotos();
     sheet.showModal();
     sheet.scrollTop = 0;
   }
   $("[data-new]").addEventListener("click", () => openSheet(null));
   $$("[data-close]").forEach(b => b.addEventListener("click", () => b.closest("dialog").close()));
 
-  $("[data-file]").addEventListener("change", e => {
-    const f = e.target.files[0]; if (!f) return;
-    pendingFile = f; setPreview(URL.createObjectURL(f));
+  fileInput.addEventListener("change", e => {
+    [...e.target.files].slice(0, MAX_PHOTOS - photos.length).forEach(file => photos.push({ file, preview: URL.createObjectURL(file) }));
+    fileInput.value = "";
+    drawPhotos();
   });
 
   /* phone photos are huge: shrink to 1400px JPEG and read the background tone */
@@ -191,18 +207,24 @@
     err.textContent = "";
     const name = form.name.value.trim();
     if (!name) { err.textContent = "Scrivi il nome del capo."; form.name.focus(); return; }
-    if (!editing && !pendingFile) { err.textContent = "Aggiungi una foto del capo."; return; }
+    if (!photos.length) { err.textContent = "Aggiungi almeno una foto del capo."; return; }
     const rawPrice = form.price.value.trim().replace("€", "").replace(",", ".");
     if (rawPrice && isNaN(parseFloat(rawPrice))) { err.textContent = "Il prezzo deve essere un numero, es. 59,90."; form.price.focus(); return; }
 
-    btn.disabled = true; btn.textContent = pendingFile ? "Carico la foto…" : "Salvo…";
+    btn.disabled = true;
     try {
-      let img = editing?.img, ground = editing?.ground || "grey";
-      if (pendingFile) {
-        const p = await prepare(pendingFile);
+      let ground = editing?.ground || "grey";
+      const fresh = photos.filter(ph => ph.file).length;
+      let done = 0;
+      for (const [i, ph] of photos.entries()) {
+        if (!ph.file) continue;
+        btn.textContent = `Carico le foto ${++done}/${fresh}…`;
+        const p = await prepare(ph.file);
         const up = await api(`/api/upload?name=${encodeURIComponent(name)}`, { method: "POST", headers: { "content-type": "image/jpeg" }, body: p.blob });
-        img = up.url; ground = p.ground;
+        Object.assign(ph, { url: up.url, file: null });
+        if (i === 0) ground = p.ground; // the cover decides the card background
       }
+      const imgs = photos.map(ph => ph.url);
       btn.textContent = "Salvo…";
       const it = {
         id: editing?.id || uid(),
@@ -212,7 +234,7 @@
         price: rawPrice ? parseFloat(rawPrice) : null,
         sizes: $$("input[name=size]:checked", sizesEl).map(i => i.value),
         status: form.querySelector("input[name=status]:checked").value,
-        ground, img, createdAt: editing?.createdAt || new Date().toISOString()
+        ground, imgs, img: imgs[0], createdAt: editing?.createdAt || new Date().toISOString()
       };
       const next = editing ? data.items.map(i => i.id === editing.id ? it : i) : [...data.items, it];
       await save(next, editing ? "Modifiche salvate" : "Pubblicato sul sito");

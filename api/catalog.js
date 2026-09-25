@@ -6,6 +6,8 @@ const CATS = ["maglie", "felpe", "giacche", "tute", "jeans", "look", "accessori"
 const STATUS = ["new", "in", "out"];
 const clip = (v, n) => String(v ?? "").trim().slice(0, n);
 
+const photos = it => [...new Set((Array.isArray(it.imgs) && it.imgs.length ? it.imgs : [it.img]).map(u => clip(u, 500)).filter(Boolean))].slice(0, 8);
+
 function clean(data) {
   const items = (Array.isArray(data.items) ? data.items : []).slice(0, 500).map(it => ({
     id: clip(it.id, 40) || crypto.randomUUID(),
@@ -18,7 +20,8 @@ function clean(data) {
     sizes: (Array.isArray(it.sizes) ? it.sizes : []).map(s => clip(s, 8)).filter(Boolean).slice(0, 20),
     status: STATUS.includes(it.status) ? it.status : "in",
     ground: ["grey", "black", "wood"].includes(it.ground) ? it.ground : "grey",
-    img: clip(it.img, 500),
+    imgs: photos(it),
+    img: photos(it)[0] || "",
     createdAt: it.createdAt || new Date().toISOString()
   })).filter(it => it.name && it.img);
   const s = data.store || {};
@@ -46,10 +49,11 @@ export async function PUT(req) {
   const next = clean(body);
   await writeJSON("catalog/", next);
 
-  // foto dei capi eliminati: via anche dall'archivio
+  // foto tolte o di capi eliminati: via anche dall'archivio
   if (prev && prev.items) {
-    const keep = new Set(next.items.map(i => i.img));
-    await Promise.all(prev.items.filter(i => !keep.has(i.img)).map(i => removeImage(i.img)));
+    const keep = new Set(next.items.flatMap(i => i.imgs));
+    const gone = [...new Set(prev.items.flatMap(photos))].filter(u => !keep.has(u));
+    await Promise.all(gone.map(removeImage));
   }
   return json(next);
 }
