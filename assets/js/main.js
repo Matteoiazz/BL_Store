@@ -1,6 +1,21 @@
-(() => {
-  document.documentElement.classList.add("js");
-  const S = window.BL_STORE, CAT = window.BL_CATALOG, CATS = window.BL_CATEGORIES;
+document.documentElement.classList.add("js");
+(async () => {
+  /* catalogo dal pannello di gestione; se non risponde, quello di partenza in catalog.js */
+  const catalogReady = (async () => {
+    try {
+      const ctl = new AbortController(); setTimeout(() => ctl.abort(), 3000);
+      const r = await fetch("/api/catalog", { signal: ctl.signal });
+      const d = r.ok ? await r.json() : null;
+      if (d && Array.isArray(d.items)) {
+        window.BL_CATALOG = d.items;
+        if (d.store?.hours) window.BL_STORE.hours = d.store.hours;
+        if (d.store?.season) window.BL_STORE.season = d.store.season;
+      }
+    } catch {}
+    return [...window.BL_CATALOG].sort((a, b) => b.n - a.n); // ultimi arrivi per primi
+  })();
+  const S = window.BL_STORE, CATS = window.BL_CATEGORIES;
+  const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -107,6 +122,9 @@
   addEventListener("scroll", onScroll, { passive: true }); onScroll();
 
   /* ---------- roster ---------- */
+  const CAT = await catalogReady;
+  $$("[data-season]").forEach(el => el.textContent = S.season);
+  if (S.hours) $("[data-hours]").textContent = S.hours;
   const grid = $("[data-grid]"), filters = $("[data-filters]"), empty = $("[data-empty]");
   const count = $("[data-count]");
   count._target = CAT.length;
@@ -133,15 +151,15 @@
     const price = euro(p.price);
     const tag = p.status === "new" ? `<span class="player__tag">Nuovo arrivo</span>` : p.status === "out" ? `<span class="player__tag player__tag--out">Esaurito</span>` : "";
     li.innerHTML = `
-      <button class="player__btn" type="button" aria-label="#${pad(p.n)} ${p.name}, ${p.variant}. ${price || "Prezzo in store"}">
-        <div class="player__img" data-ground="${p.ground}">
-          <img src="${p.img}" alt="${p.name}, ${p.variant}" loading="${i < 3 ? "eager" : "lazy"}" width="640" height="640">
+      <button class="player__btn" type="button" aria-label="#${pad(p.n)} ${esc(p.name)}, ${esc(p.variant)}. ${price || "Prezzo in store"}">
+        <div class="player__img" data-ground="${esc(p.ground)}">
+          <img src="${esc(p.img)}" alt="${esc(p.name)}, ${esc(p.variant)}" loading="${i < 3 ? "eager" : "lazy"}" width="640" height="640">
           ${tag}
         </div>
         <div class="player__bar">
           <span class="num player__num" aria-hidden="true"></span>
-          <span class="player__name">${p.name}</span>
-          <span class="player__sub"><span class="player__variant">${p.variant}</span><span class="player__price${price ? "" : " is-ask"}">${price || "Prezzo in store"}</span></span>
+          <span class="player__name">${esc(p.name)}</span>
+          <span class="player__sub"><span class="player__variant">${esc(p.variant)}</span><span class="player__price${price ? "" : " is-ask"}">${price || "Prezzo in store"}</span></span>
         </div>
       </button>`;
     const num = $(".player__num", li);
@@ -209,7 +227,7 @@
     L("price").textContent = price || "Prezzo in store · chiedi su WhatsApp";
     L("price").classList.toggle("is-ask", !price);
     L("sizes").innerHTML = p.sizes && p.sizes.length
-      ? p.sizes.map(s => `<li>${s}</li>`).join("")
+      ? p.sizes.map(s => `<li>${esc(s)}</li>`).join("")
       : `<li class="is-ask">Chiedi disponibilità</li>`;
     L("wa").href = wa(`Ciao BL Store! Mi interessa il #${pad(p.n)} ${p.name} (${p.variant}). È disponibile? Che taglie avete?`);
   }

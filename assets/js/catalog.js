@@ -1,7 +1,8 @@
 /*
-  CATALOGO BL STORE
-  -----------------
-  Per aggiungere o modificare un capo modifica solo questo file.
+  CATALOGO DI PARTENZA BL STORE
+  -----------------------------
+  I capi si gestiscono dal pannello: /admin
+  Questo file serve solo come catalogo iniziale (e di riserva se il pannello non risponde).
   - price: prezzo in euro (es. 59.90). Lascia null per mostrare "Prezzo in store".
   - sizes: taglie disponibili (es. ["S","M","L","XL"]). Lascia [] se da chiedere.
   - ground: "grey" per le foto su fondo grigio, "black" per quelle nella black box.
@@ -42,5 +43,7 @@ window.BL_CATEGORIES = [
   { id: "giacche", label: "Giacche" },
   { id: "tute",    label: "Tute & completi" },
   { id: "jeans",   label: "Jeans" },
-  { id: "look",    label: "Look" }
+  { id: "look",    label: "Look" },
+  { id: "accessori", label: "Accessori" },
+  { id: "scarpe",  label: "Scarpe" }
 ];

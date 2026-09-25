@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#0b0b0c">
+  <title>BL Store · Gestione</title>
+  <link rel="icon" href="/assets/img/ig/logo.jpg">
+  <link rel="apple-touch-icon" href="/assets/img/ig/logo.jpg">
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+      <symbol id="i-cam" viewBox="0 0 24 24"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3Z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+      <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+      <symbol id="i-ext" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></symbol>
+      <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></symbol>
+    </defs>
+  </svg>
+
+  <!-- stato: caricamento / archivio non collegato / accesso -->
+  <main class="gate" data-view="gate">
+    <img class="gate__logo" src="/assets/img/ig/logo.jpg" alt="BL Store" width="72" height="72">
+    <h1 class="gate__title" data-gate-title>BL Store</h1>
+    <p class="gate__text" data-gate-text>Caricamento…</p>
+    <form class="gate__form" data-login hidden>
+      <label class="field">
+        <span data-pw-label>Password</span>
+        <input type="password" name="password" autocomplete="current-password" required minlength="1">
+      </label>
+      <p class="err" data-login-err role="alert"></p>
+      <button class="btn btn--blue btn--full" type="submit" data-login-btn>Entra</button>
+    </form>
+  </main>
+
+  <!-- gestione -->
+  <div class="app" data-view="app" hidden>
+    <header class="top">
+      <div class="top__brand"><img src="/assets/img/ig/logo.jpg" alt="" width="36" height="36"><span>Gestione</span></div>
+      <a class="icon-btn" href="/" target="_blank" rel="noopener" aria-label="Apri il sito"><svg class="ico"><use href="#i-ext"/></svg></a>
+      <button class="icon-btn" data-open-settings aria-label="Impostazioni negozio"><svg class="ico"><use href="#i-gear"/></svg></button>
+    </header>
+
+    <p class="banner" data-seed-banner hidden>Questi sono i capi di partenza presi da Instagram. Modificali o aggiungine di nuovi: al primo salvataggio il catalogo diventa tuo.</p>
+
+    <div class="stats" data-stats></div>
+
+    <div class="filter" role="tablist" aria-label="Mostra">
+      <button role="tab" aria-selected="true" data-show="all">Tutti</button>
+      <button role="tab" aria-selected="false" data-show="new">Nuovi</button>
+      <button role="tab" aria-selected="false" data-show="in">Disponibili</button>
+      <button role="tab" aria-selected="false" data-show="out">Esauriti</button>
+    </div>
+
+    <ul class="list" data-list></ul>
+    <p class="empty" data-empty hidden>Nessun capo qui. Premi “Nuovo arrivo” per aggiungerne uno.</p>
+
+    <button class="fab btn btn--blue" data-new><svg class="ico"><use href="#i-plus"/></svg> Nuovo arrivo</button>
+    <div class="toast" data-toast role="status" aria-live="polite"></div>
+  </div>
+
+  <!-- scheda capo -->
+  <dialog class="sheet" data-sheet aria-labelledby="sheet-title">
+    <form class="sheet__form" data-form novalidate>
+      <header class="sheet__head">
+        <button type="button" class="icon-btn" data-close aria-label="Chiudi"><svg class="ico"><use href="#i-close"/></svg></button>
+        <h2 id="sheet-title" data-sheet-title>Nuovo arrivo</h2>
+        <span class="sheet__num" data-sheet-num></span>
+      </header>
+
+      <label class="photo" data-photo>
+        <input type="file" accept="image/*" data-file hidden>
+        <img data-preview alt="" hidden>
+        <span class="photo__empty" data-photo-empty><svg class="ico ico--lg"><use href="#i-cam"/></svg><b>Aggiungi foto</b><small>Scatta o scegli dalla galleria</small></span>
+        <span class="photo__change" data-photo-change hidden>Cambia foto</span>
+      </label>
+
+      <label class="field"><span>Nome del capo *</span><input name="name" required maxlength="80" placeholder="Es. Hoodie Blessed 17" autocomplete="off"></label>
+      <label class="field"><span>Dettagli</span><input name="variant" maxlength="120" placeholder="Es. Nero, strass all over" autocomplete="off"></label>
+      <div class="row">
+        <label class="field"><span>Prezzo €</span><input name="price" inputmode="decimal" placeholder="Vuoto = in store" autocomplete="off"></label>
+        <label class="field"><span>Marca</span><input name="brand" maxlength="60" placeholder="Facoltativa" autocomplete="off"></label>
+      </div>
+
+      <fieldset class="field">
+        <legend>Categoria</legend>
+        <div class="pills" data-cats></div>
+      </fieldset>
+
+      <fieldset class="field">
+        <legend>Taglie disponibili</legend>
+        <div class="pills" data-sizes></div>
+        <div class="add-size"><input data-size-input placeholder="Altra taglia (es. 44)" maxlength="8"><button type="button" class="btn btn--ghost btn--sm" data-size-add>Aggiungi</button></div>
+      </fieldset>
+
+      <fieldset class="field">
+        <legend>Stato</legend>
+        <div class="pills pills--status">
+          <label><input type="radio" name="status" value="new"><span>Nuovo arrivo</span></label>
+          <label><input type="radio" name="status" value="in"><span>Disponibile</span></label>
+          <label><input type="radio" name="status" value="out"><span>Esaurito</span></label>
+        </div>
+      </fieldset>
+
+      <p class="err" data-form-err role="alert"></p>
+
+      <footer class="sheet__foot">
+        <button type="button" class="btn btn--danger" data-delete hidden><svg class="ico"><use href="#i-trash"/></svg> Elimina</button>
+        <button type="submit" class="btn btn--blue btn--grow" data-save>Pubblica</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- impostazioni negozio -->
+  <dialog class="sheet" data-settings aria-labelledby="set-title">
+    <form class="sheet__form" data-settings-form>
+      <header class="sheet__head">
+        <button type="button" class="icon-btn" data-close aria-label="Chiudi"><svg class="ico"><use href="#i-close"/></svg></button>
+        <h2 id="set-title">Negozio</h2>
+      </header>
+      <label class="field"><span>Collezione in corso</span><input name="season" maxlength="30" placeholder="Es. FW 26/27"></label>
+      <label class="field"><span>Orari</span><input name="hours" maxlength="160" placeholder="Es. Lun–Sab 9:30–13 / 16:30–20:30"></label>
+      <p class="hint">Se lasci vuoti gli orari, sul sito c'è “Scrivici su WhatsApp per gli orari”.</p>
+      <footer class="sheet__foot"><button type="submit" class="btn btn--blue btn--grow">Salva</button></footer>
+
+      <h3 class="sub">Cambia password</h3>
+      <label class="field"><span>Password attuale</span><input type="password" name="current" autocomplete="current-password"></label>
+      <label class="field"><span>Nuova password</span><input type="password" name="next" autocomplete="new-password" minlength="8"></label>
+      <p class="err" data-set-err role="alert"></p>
+      <footer class="sheet__foot">
+        <button type="button" class="btn btn--ghost" data-logout>Esci</button>
+        <button type="button" class="btn btn--ghost btn--grow" data-change-pw>Cambia password</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <script src="/assets/js/catalog.js"></script>
+  <script src="/admin/admin.js"></script>
+</body>
+</html>
