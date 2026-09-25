@@ -7,7 +7,6 @@ import { join } from "node:path";
 // Newer projects connect Blob with BLOB_STORE_ID only: the SDK then authenticates by itself (OIDC).
 const tokenKey = "BLOB_READ_WRITE_TOKEN" in process.env ? "BLOB_READ_WRITE_TOKEN" : Object.keys(process.env).find(k => /_READ_WRITE_TOKEN$/.test(k));
 const blobToken = tokenKey ? process.env[tokenKey] : "";
-export const tokenCandidates = () => Object.keys(process.env).filter(k => /BLOB|READ_WRITE_TOKEN|STORE_ID/i.test(k));
 const useBlob = !!blobToken || !!process.env.BLOB_STORE_ID;
 const T = blobToken ? { token: blobToken } : {};
 let blob;

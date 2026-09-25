@@ -67,6 +67,16 @@ document.documentElement.classList.add("js");
   $$("[data-handle]").forEach(el => el.textContent = S.handle);
   $$("[data-city]").forEach(el => el.textContent = S.city);
   $("[data-year]").textContent = new Date().getFullYear();
+
+  /* the map loads only on request: no Google cookies until the visitor asks for it */
+  const mapBtn = $("[data-map-load]");
+  mapBtn?.addEventListener("click", () => {
+    const f = document.createElement("iframe");
+    f.title = "Mappa: BL Store, Via Cesare Marini 19, Cosenza";
+    f.referrerPolicy = "no-referrer-when-downgrade";
+    f.src = "https://www.google.com/maps?q=Via%20Cesare%20Marini%2019%2C%20Cosenza&z=17&output=embed";
+    mapBtn.replaceWith(f);
+  });
   facts();
 
   /* ---------- black box ---------- */

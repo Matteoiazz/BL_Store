@@ -14,8 +14,7 @@
   <link rel="icon" href="assets/img/ig/logo.jpg">
   <link rel="preload" href="assets/fonts/pirata-one.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="assets/css/style.css">
-  <!-- Vercel Web Analytics + Speed Insights (attivi dopo averli abilitati nel progetto Vercel) -->
-  <script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); }; window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };</script>
+  <script src="assets/js/vitals.js"></script>
   <script defer src="/_vercel/insights/script.js"></script>
   <script defer src="/_vercel/speed-insights/script.js"></script>
 </head>
@@ -125,8 +124,11 @@
           </div>
         </div>
         <figure class="map">
-          <iframe title="Mappa: BL Store, Via Cesare Marini 19, Cosenza" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
-            src="https://www.google.com/maps?q=Via%20Cesare%20Marini%2019%2C%20Cosenza&z=17&output=embed"></iframe>
+          <button type="button" class="map__load" data-map-load>
+            <svg class="ico"><use href="#i-pin"/></svg>
+            <b>Mostra la mappa</b>
+            <small>Si apre Google Maps, che può usare cookie.</small>
+          </button>
           <figcaption><svg class="ico"><use href="#i-pin"/></svg> BL Store · Via Cesare Marini 19</figcaption>
         </figure>
       </div>
