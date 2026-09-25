@@ -38,7 +38,7 @@ export async function GET() {
 
 export async function PUT(req) {
   if (!storageReady()) return json({ error: "Archivio non ancora collegato su Vercel." }, 503);
-  if (!isAuthed(req)) return json({ error: "Accesso scaduto, rientra." }, 401);
+  if (!(await isAuthed(req))) return json({ error: "Accesso scaduto, rientra." }, 401);
   const body = await req.json().catch(() => null);
   if (!body) return json({ error: "Dati non validi." }, 400);
 

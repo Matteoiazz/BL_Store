@@ -7,7 +7,7 @@ const MAX = 4 * 1024 * 1024;
 
 export async function POST(req) {
   if (!storageReady()) return json({ error: "Archivio non ancora collegato su Vercel." }, 503);
-  if (!isAuthed(req)) return json({ error: "Accesso scaduto, rientra." }, 401);
+  if (!(await isAuthed(req))) return json({ error: "Accesso scaduto, rientra." }, 401);
   const type = (req.headers.get("content-type") || "").split(";")[0];
   if (!TYPES[type]) return json({ error: "Formato foto non supportato." }, 415);
   const bytes = Buffer.from(await req.arrayBuffer());

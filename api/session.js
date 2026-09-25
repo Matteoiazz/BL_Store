@@ -10,7 +10,7 @@ const notReady = () => json({ error: "storage", message: "Archivio non ancora co
 
 export async function GET(req) {
   if (!storageReady()) return notReady();
-  return json({ setup: !(await hasPassword()), authed: isAuthed(req) });
+  return json({ setup: !(await hasPassword()), authed: await isAuthed(req) });
 }
 
 export async function POST(req) {
@@ -21,17 +21,17 @@ export async function POST(req) {
   if (!(await hasPassword())) {
     if (password.length < 8) return json({ error: "La password deve avere almeno 8 caratteri." }, 400);
     await setPassword(password);
-    return json({ ok: true, created: true }, 200, { "set-cookie": sessionCookie(req) });
+    return json({ ok: true, created: true }, 200, { "set-cookie": await sessionCookie(req) });
   }
   if (!(await checkPassword(password))) {
     await new Promise(r => setTimeout(r, 800));
     return json({ error: "Password sbagliata." }, 401);
   }
-  return json({ ok: true }, 200, { "set-cookie": sessionCookie(req) });
+  return json({ ok: true }, 200, { "set-cookie": await sessionCookie(req) });
 }
 
 export async function PUT(req) {
-  if (!isAuthed(req)) return json({ error: "Accesso scaduto, rientra." }, 401);
+  if (!(await isAuthed(req))) return json({ error: "Accesso scaduto, rientra." }, 401);
   const { current, password } = await req.json().catch(() => ({}));
   if (!(await checkPassword(current))) return json({ error: "La password attuale non è giusta." }, 401);
   if (typeof password !== "string" || password.length < 8) return json({ error: "La nuova password deve avere almeno 8 caratteri." }, 400);
