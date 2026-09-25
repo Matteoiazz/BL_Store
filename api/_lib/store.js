@@ -1,26 +1,40 @@
 // Storage: Vercel Blob in produzione, cartella locale .data/ in sviluppo.
 import { randomUUID } from "node:crypto";
+import { mkdir, readFile, writeFile, readdir, rm } from "node:fs/promises";
+import { join } from "node:path";
 
 // Vercel names the variable BLOB_READ_WRITE_TOKEN, or <PREFIX>_READ_WRITE_TOKEN when the store was connected with a custom prefix.
+// Newer projects connect Blob with BLOB_STORE_ID only: the SDK then authenticates by itself (OIDC).
 const tokenKey = "BLOB_READ_WRITE_TOKEN" in process.env ? "BLOB_READ_WRITE_TOKEN" : Object.keys(process.env).find(k => /_READ_WRITE_TOKEN$/.test(k));
-export const blobToken = tokenKey ? process.env[tokenKey] : "";
+const blobToken = tokenKey ? process.env[tokenKey] : "";
 export const tokenCandidates = () => Object.keys(process.env).filter(k => /BLOB|READ_WRITE_TOKEN|STORE_ID/i.test(k));
-// newer Vercel projects connect Blob with BLOB_STORE_ID only: the SDK then authenticates by itself (OIDC)
 const useBlob = !!blobToken || !!process.env.BLOB_STORE_ID;
 const T = blobToken ? { token: blobToken } : {};
 let blob;
 async function B() { return blob ||= await import("@vercel/blob"); }
 
-// ---------- local fallback (npm run dev without a token) ----------
-import { mkdir, readFile, writeFile, readdir, rm } from "node:fs/promises";
-import { join } from "node:path";
-const DATA = join(process.cwd(), ".data");
+// a store is either private or public; learn which on the first call and remember it
+let ACCESS = process.env.BLOB_ACCESS || null;
+async function withAccess(fn) {
+  const tries = ACCESS ? [ACCESS] : ["private", "public"];
+  for (let i = 0; i < tries.length; i++) {
+    try { const r = await fn(tries[i]); ACCESS = tries[i]; return r; }
+    catch (e) { if (i < tries.length - 1 && /access/i.test(String(e?.message))) continue; throw e; }
+  }
+}
 
+async function readBlobText(pathname) {
+  const { get } = await B();
+  const r = await withAccess(access => get(pathname, { access, useCache: false, ...T }));
+  if (!r || !r.stream) return null;
+  return new Response(r.stream).text();
+}
+
+// ---------- local fallback (npm run dev without Blob) ----------
+const DATA = join(process.cwd(), ".data");
 async function localList(prefix) {
-  const dir = join(DATA, prefix);
   try {
-    const files = await readdir(dir);
-    return files.map(f => ({ pathname: prefix + f, url: `/.data/${prefix}${f}`, uploadedAt: new Date(Number(f.split("-")[0]) || 0) }));
+    return (await readdir(join(DATA, prefix))).map(f => ({ pathname: prefix + f }));
   } catch { return []; }
 }
 
@@ -31,8 +45,8 @@ export async function readJSON(prefix) {
     const { blobs } = await list({ prefix, limit: 1000, ...T });
     if (!blobs.length) return null;
     blobs.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
-    const r = await fetch(blobs[0].url, { cache: "no-store" });
-    return r.ok ? r.json() : null;
+    const text = await readBlobText(blobs[0].pathname);
+    return text ? JSON.parse(text) : null;
   }
   const files = (await localList(prefix)).sort((a, b) => b.pathname.localeCompare(a.pathname));
   if (!files.length) return null;
@@ -44,7 +58,7 @@ export async function writeJSON(prefix, data) {
   const body = JSON.stringify(data);
   if (useBlob) {
     const { put, list, del } = await B();
-    await put(`${prefix}${Date.now()}.json`, body, { access: "public", addRandomSuffix: true, contentType: "application/json", cacheControlMaxAge: 60, ...T });
+    await withAccess(access => put(`${prefix}${Date.now()}.json`, body, { access, addRandomSuffix: true, contentType: "application/json", cacheControlMaxAge: 60, ...T }));
     const { blobs } = await list({ prefix, limit: 1000, ...T });
     blobs.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
     const old = blobs.slice(5).map(b => b.url);
@@ -55,12 +69,13 @@ export async function writeJSON(prefix, data) {
   await writeFile(join(DATA, prefix, `${Date.now()}-${randomUUID().slice(0, 8)}.json`), body);
 }
 
-/** Stores an uploaded image, returns its public URL. */
+/** Stores an uploaded image, returns the URL the site shows it from. */
 export async function putImage(name, bytes, contentType) {
   if (useBlob) {
     const { put } = await B();
-    const res = await put(`products/${name}`, bytes, { access: "public", addRandomSuffix: true, contentType, ...T });
-    return res.url;
+    const res = await withAccess(access => put(`products/${name}`, bytes, { access, addRandomSuffix: true, contentType, cacheControlMaxAge: 31536000, ...T }));
+    // private stores can't be linked directly: the site serves the photo itself (api/img)
+    return ACCESS === "public" ? res.url : `/api/img?p=${encodeURIComponent(res.pathname)}`;
   }
   const file = `${Date.now()}-${name}`;
   await mkdir(join(DATA, "products"), { recursive: true });
@@ -68,12 +83,25 @@ export async function putImage(name, bytes, contentType) {
   return `/.data/products/${file}`;
 }
 
+/** Streams a stored photo (only for pathnames under products/). */
+export async function getImage(pathname) {
+  if (!/^products\/[\w.-]+$/.test(pathname)) return null;
+  if (useBlob) {
+    const { get } = await B();
+    const r = await withAccess(access => get(pathname, { access, ...T }));
+    return r && r.stream ? { stream: r.stream, type: r.blob.contentType || "image/jpeg" } : null;
+  }
+  try { return { stream: await readFile(join(DATA, pathname)), type: "image/jpeg" }; } catch { return null; }
+}
+
 export async function removeImage(url) {
   if (!url || url.startsWith("assets/")) return; // foto originali del sito: non si toccano
+  const own = url.startsWith("/api/img?p=") ? decodeURIComponent(url.split("p=")[1]) : null;
   if (useBlob) {
-    if (!/\.blob\.vercel-storage\.com\//.test(url)) return;
+    const target = own || (/\.blob\.vercel-storage\.com\//.test(url) ? url : null);
+    if (!target) return;
     const { del } = await B();
-    await del(url, T).catch(() => {});
+    await del(target, T).catch(() => {});
     return;
   }
   if (url.startsWith("/.data/")) await rm(join(process.cwd(), url.slice(1))).catch(() => {});

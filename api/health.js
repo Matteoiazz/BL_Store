@@ -2,13 +2,13 @@
 import { json } from "./_lib/auth.js";
 
 export async function GET() {
-  const out = { storeId: !!process.env.BLOB_STORE_ID, token: !!process.env.BLOB_READ_WRITE_TOKEN };
+  const out = { storeId: !!process.env.BLOB_STORE_ID };
   try {
-    const { put, del, list } = await import("@vercel/blob");
-    const b = await put(`health/${Date.now()}.txt`, "ok", { access: "public", addRandomSuffix: true, contentType: "text/plain" });
+    const { put, get, del } = await import("@vercel/blob");
+    const b = await put(`health/${Date.now()}.txt`, "ok", { access: "private", addRandomSuffix: true, contentType: "text/plain" });
     out.put = true;
-    out.read = (await (await fetch(b.url, { cache: "no-store" })).text()) === "ok";
-    out.list = (await list({ prefix: "health/" })).blobs.length > 0;
+    const r = await get(b.pathname, { access: "private", useCache: false });
+    out.read = r && r.stream ? (await new Response(r.stream).text()) === "ok" : false;
     await del(b.url);
     out.del = true;
   } catch (e) {
