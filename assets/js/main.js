@@ -53,10 +53,40 @@ document.documentElement.classList.add("js");
     el._value = str;
   }
 
+  /* ---------- open now? computed on Italian time from the weekly schedule ---------- */
+  function openNow() {
+    const els = $$("[data-open]");
+    if (!S.schedule || S.hours) { els.forEach(e => e.hidden = true); return; }
+    const parts = Object.fromEntries(new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Rome", weekday: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" })
+      .formatToParts(new Date()).map(p => [p.type, p.value]));
+    const day = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(parts.weekday);
+    const now = +parts.hour * 60 + +parts.minute;
+    const mins = t => { const [h, m] = t.split(":"); return +h * 60 + +m; };
+    const fmt = t => t.replace(/^0/, "");
+    const today = S.schedule[day] || [];
+    const open = today.find(([a, b]) => now >= mins(a) && now < mins(b));
+    let text;
+    if (open) text = `Aperto ora · fino alle ${fmt(open[1])}`;
+    else {
+      const later = today.find(([a]) => mins(a) > now);
+      if (later) text = `Chiuso · apre alle ${fmt(later[0])}`;
+      else {
+        const names = ["domenica", "lunedì", "martedì", "mercoledì", "giovedì", "venerdì", "sabato"];
+        for (let k = 1; k <= 7; k++) {
+          const d = (day + k) % 7, first = (S.schedule[d] || [])[0];
+          if (first) { text = `Chiuso · apre ${k === 1 ? "domani" : names[d]} alle ${fmt(first[0])}`; break; }
+        }
+      }
+    }
+    els.forEach(e => { e.hidden = false; e.textContent = text; e.classList.toggle("is-open", !!open); });
+  }
+  setInterval(openNow, 60000);
+
   /* ---------- store facts into the page ---------- */
   const facts = () => {
     $$("[data-season]").forEach(el => el.textContent = S.season);
-    if (S.hours) $("[data-hours]").textContent = S.hours;
+    if (S.hours) $("[data-hours]").textContent = S.hours; // custom text from the panel wins
+    openNow();
   };
   $$("[data-wa]").forEach(a => a.href = wa("Ciao BL Store! Vorrei qualche info."));
   $$("[data-ig]").forEach(a => a.href = S.instagram);

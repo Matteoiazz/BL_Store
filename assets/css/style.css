@@ -445,3 +445,16 @@ address { font-style: normal; }
 .map__link:hover .m-shop { stroke: var(--sky); }
 .map figcaption { pointer-events: none; }
 @media (prefers-reduced-motion: reduce) { .m-pin__halo { animation: none; } }
+
+/* ---------- hours + open now ---------- */
+.hours { display: grid; gap: 4px; }
+.hours b { display: inline-block; min-width: 88px; font-weight: 800; font-stretch: 80%; letter-spacing: .06em; text-transform: uppercase; font-size: 14px; color: var(--chrome); }
+.open { display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; padding: 5px 10px; border-radius: 2px; border: 1px solid var(--line);
+  font-weight: 800; font-stretch: 80%; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--chrome); }
+.open::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--mute); }
+.open.is-open { border-color: rgba(120,208,232,.5); color: var(--sky); }
+.open.is-open::before { background: var(--sky); box-shadow: 0 0 8px var(--sky); animation: blink 2s steps(1, end) infinite; }
+@keyframes blink { 50% { opacity: .35; } }
+.open--hero { margin: 10px 0 0; letter-spacing: .12em; }
+.box__line .open--hero { font-size: 11px; }
+@media (prefers-reduced-motion: reduce) { .open.is-open::before { animation: none; } }

@@ -17,7 +17,14 @@ window.BL_STORE = {
   address: "Via Cesare Marini, 19",
   city: "87100 Cosenza CS",
   maps: "https://www.google.com/maps/dir/?api=1&destination=39.2990605,16.2547004",
-  hours: null, // es. "Lun–Sab 9:30–13:00 / 16:30–20:30"
+  // orari dal 28/06/2026 (post Instagram del negozio). Giorni: 0 = domenica … 6 = sabato
+  schedule: {
+    0: [["17:30", "20:00"]],
+    1: [["09:30", "13:00"], ["16:30", "20:00"]], 2: [["09:30", "13:00"], ["16:30", "20:00"]],
+    3: [["09:30", "13:00"], ["16:30", "20:00"]], 4: [["09:30", "13:00"], ["16:30", "20:00"]],
+    5: [["09:30", "13:00"], ["16:30", "20:00"]], 6: [["09:30", "13:00"], ["16:30", "20:00"]]
+  },
+  hours: null, // testo libero dal pannello: se impostato sostituisce la tabella qui sopra
   season: "FW 26/27"
 };
 
