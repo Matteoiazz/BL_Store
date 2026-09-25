@@ -73,32 +73,55 @@ document.documentElement.classList.add("js");
   requestAnimationFrame(() => box.classList.add("is-in"));
   setTimeout(() => box.classList.add("is-ready"), 2000);
 
-  // the display on the floor: the lights flicker and, in the dark, the garment changes
-  const DISPLAY = [
-    { n: 2, name: "Hoodie Blessed 17", img: "assets/img/cut/p02.png", w: 574, h: 385, glints: [[61, 44], [79, 37], [70, 66], [57, 72], [24, 27], [40, 24]] },
-    { n: 6, name: "Longsleeve Rise Again", img: "assets/img/cut/p06.png", w: 514, h: 421, glints: [[22, 7], [34, 5], [66, 5], [78, 8]] },
-    { n: 7, name: "Look Yellow Print", img: "assets/img/cut/p07.png", w: 395, h: 601, glints: [] }
-  ];
+  // the display on the floor: the lights flicker and, in the dark, the garment changes.
+  // Garments shot on the grey sweep have a cut-out; the ones shot in the black box are shown
+  // whole, their own black room fading into ours. New arrivals join the rotation by themselves.
+  const CUTS = {
+    "assets/img/ig/p01.jpg": { src: "assets/img/cut/p01.webp" },
+    "assets/img/ig/p02.jpg": { src: "assets/img/cut/p02.webp", glints: [[61, 44], [79, 37], [70, 66], [57, 72], [24, 27], [40, 24]] },
+    "assets/img/ig/p04.jpg": { src: "assets/img/cut/p04.webp" },
+    "assets/img/ig/p05.jpg": { src: "assets/img/cut/p05.webp" },
+    "assets/img/ig/p06.jpg": { src: "assets/img/cut/p06.webp", glints: [[22, 7], [34, 5], [66, 5], [78, 8]] },
+    "assets/img/ig/p07.jpg": { src: "assets/img/cut/p07.webp" },
+    "assets/img/ig/p10.jpg": { src: "assets/img/cut/p10.webp", glints: [[34, 42], [41, 44], [62, 42], [69, 44]] }
+  };
+  const toShow = p => {
+    const c = CUTS[p.img];
+    if (c) return { item: p, src: c.src, glints: c.glints || [], photo: false };
+    if (p.ground === "black") return { item: p, src: p.img, glints: [], photo: true };
+    return null;
+  };
+  const buildDisplay = cat => {
+    const all = cat.filter(p => p.status !== "out").map(toShow).filter(Boolean);
+    const cuts = all.filter(d => !d.photo), photos = all.filter(d => d.photo), mixed = [];
+    for (let i = 0; i < Math.max(cuts.length, photos.length); i++) { if (cuts[i]) mixed.push(cuts[i]); if (photos[i]) mixed.push(photos[i]); }
+    const first = mixed.findIndex(d => d.item.img === "assets/img/ig/p02.jpg"); // the Blessed hoodies open the show
+    return first > 0 ? [...mixed.slice(first), ...mixed.slice(0, first)] : mixed;
+  };
+  let DISPLAY = [toShow(window.BL_CATALOG.find(p => p.img === "assets/img/ig/p02.jpg") || window.BL_CATALOG[0])].filter(Boolean);
   const disp = { a: $("[data-display]"), frame: $("[data-display-frame]"), img: $("[data-display-img]"), mirror: $("[data-display-mirror]"),
     glints: $("[data-glints]"), num: $("[data-display-num]"), name: $("[data-display-name]"), label: $(".display") };
-  DISPLAY.forEach(d => { const i = new Image(); i.src = d.img; }); // preload
   let dIdx = 0, dPaused = false;
+  const preload = d => { if (d) { const i = new Image(); i.src = d.src; } };
   function showDisplay(d, prevN) {
-    disp.img.src = disp.mirror.src = d.img;
-    disp.img.width = disp.mirror.width = d.w; disp.img.height = disp.mirror.height = d.h;
+    disp.img.removeAttribute("width"); disp.img.removeAttribute("height");
+    disp.img.src = disp.mirror.src = d.src;
+    disp.frame.classList.toggle("is-photo", d.photo);
+    disp.img.onload = () => disp.frame.classList.toggle("is-tall", !d.photo && disp.img.naturalHeight / disp.img.naturalWidth > 1.25);
     disp.glints.innerHTML = d.glints.map(([x, y], i) => `<span class="glint" style="--x:${x}%;--y:${y}%;--d:${(i * .7).toFixed(1)}s"></span>`).join("");
-    disp.name.textContent = d.name;
-    disp.a.setAttribute("aria-label", `${d.name}: apri la scheda`);
-    roll(disp.num, pad(d.n), { from: prevN });
+    disp.name.textContent = d.item.name;
+    disp.a.setAttribute("aria-label", `${d.item.name}: apri la scheda`);
+    roll(disp.num, pad(d.item.n), { from: prevN });
+    preload(DISPLAY[(dIdx + 1) % DISPLAY.length]);
   }
-  showDisplay(DISPLAY[0]);
+  if (DISPLAY[0]) showDisplay(DISPLAY[0]);
   function nextDisplay() {
-    if (dPaused || document.hidden || !lightsOn()) return;
+    if (dPaused || document.hidden || !lightsOn() || DISPLAY.length < 2) return;
     const prev = DISPLAY[dIdx];
     dIdx = (dIdx + 1) % DISPLAY.length;
     box.classList.add("is-swap");
     [disp.frame, disp.label].forEach(el => el.classList.add("is-dark"));
-    setTimeout(() => showDisplay(DISPLAY[dIdx], pad(prev.n)), 220);
+    setTimeout(() => showDisplay(DISPLAY[dIdx], pad(prev.item.n)), 220);
     setTimeout(() => [disp.frame, disp.label].forEach(el => el.classList.remove("is-dark")), 300);
     setTimeout(() => box.classList.remove("is-swap"), 520);
   }
@@ -150,10 +173,14 @@ document.documentElement.classList.add("js");
   const grid = $("[data-grid]"), filters = $("[data-filters]"), empty = $("[data-empty]"), count = $("[data-count]");
   let current = "all", visible = CAT;
 
+  // the full rotation, from the live catalogue
+  const shown = DISPLAY[dIdx]?.item;
+  DISPLAY = buildDisplay(CAT);
+  dIdx = Math.max(0, DISPLAY.findIndex(d => d.item.img === shown?.img));
+  preload(DISPLAY[(dIdx + 1) % DISPLAY.length]);
   disp.a.addEventListener("click", e => {
     const d = DISPLAY[dIdx];
-    const it = CAT.find(p => p.name === d.name);
-    if (it) { e.preventDefault(); visible = CAT; openLocker(it); }
+    if (d) { e.preventDefault(); visible = CAT; openLocker(d.item); }
   });
 
   CATS.forEach(c => {

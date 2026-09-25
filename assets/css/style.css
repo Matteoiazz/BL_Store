@@ -348,3 +348,19 @@ address { font-style: normal; }
 /* after the strike-on, the tubes just hum */
 .js .box.is-in.is-ready .tube { opacity: 1; animation: hum 9s 3s infinite; }
 .js .box.is-in.is-ready .tube--r { animation: hum 11s 5s infinite; }
+
+/* ---------- the display: floor tube and black-box shots ---------- */
+/* a fluorescent tube lying on the floor under the garment, lighting it from below */
+.garment__frame::after {
+  content: ""; position: absolute; z-index: 2; left: 14%; right: 14%; bottom: -6px; height: 5px; border-radius: 4px; background: #f8fbff;
+  box-shadow: 0 0 6px 1px #fff, 0 -10px 34px 6px rgba(200,222,255,.32), 0 -40px 90px 20px rgba(190,215,255,.12); }
+.garment__img { position: relative; z-index: 1; }
+/* shots taken in the shop's black box: the photo's own dark room fades into the page */
+.garment__frame.is-photo { aspect-ratio: 1 / 1; }
+.garment__frame.is-photo .garment__img { width: 100%; height: 100%; object-fit: cover;
+  mask: radial-gradient(closest-side, #000 62%, transparent 100%); filter: none; }
+.garment__frame.is-photo .garment__mirror { display: none; }
+.garment__frame.is-photo::after { left: 22%; right: 22%; bottom: 4%; }
+.box.is-dim .garment__frame::after { opacity: .05; box-shadow: none; }
+/* full looks (tee + jeans) are tall: give them more height so they are not tiny */
+@media (min-width: 761px) { .garment__frame.is-tall { height: clamp(260px, 54svh, 540px); } }
