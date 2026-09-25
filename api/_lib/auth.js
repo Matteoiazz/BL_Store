@@ -1,10 +1,10 @@
 // Password del negozio (scelta al primo accesso) + sessione firmata in un cookie.
 import { scryptSync, randomBytes, timingSafeEqual, createHmac } from "node:crypto";
-import { readJSON, writeJSON } from "./store.js";
+import { readJSON, writeJSON, blobToken } from "./store.js";
 
 const COOKIE = "bl_admin";
 const TTL = 60 * 60 * 24 * 30; // 30 giorni: il negoziante resta collegato sul suo telefono
-const secret = () => createHmac("sha256", process.env.BLOB_READ_WRITE_TOKEN || "dev-only-secret").update("bl-session").digest();
+const secret = () => createHmac("sha256", blobToken || "dev-only-secret").update("bl-session").digest();
 
 export async function hasPassword() {
   return !!(await readJSON("auth/"));

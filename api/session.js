@@ -3,9 +3,10 @@
 // PUT {current, password}: cambio password
 // DELETE: esci
 import { hasPassword, setPassword, checkPassword, sessionCookie, clearCookie, isAuthed, json } from "./_lib/auth.js";
-import { storageReady } from "./_lib/store.js";
+import { storageReady, tokenCandidates } from "./_lib/store.js";
 
-const notReady = () => json({ error: "storage", message: "Archivio non ancora collegato su Vercel." }, 503);
+// only variable NAMES are reported, never their values
+const notReady = () => json({ error: "storage", message: "Archivio non ancora collegato su Vercel.", seen: tokenCandidates() }, 503);
 
 export async function GET(req) {
   if (!storageReady()) return notReady();

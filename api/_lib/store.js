@@ -1,7 +1,12 @@
 // Storage: Vercel Blob in produzione, cartella locale .data/ in sviluppo.
 import { randomUUID } from "node:crypto";
 
-const useBlob = !!process.env.BLOB_READ_WRITE_TOKEN;
+// Vercel names the variable BLOB_READ_WRITE_TOKEN, or <PREFIX>_READ_WRITE_TOKEN when the store was connected with a custom prefix.
+const tokenKey = "BLOB_READ_WRITE_TOKEN" in process.env ? "BLOB_READ_WRITE_TOKEN" : Object.keys(process.env).find(k => /_READ_WRITE_TOKEN$/.test(k));
+export const blobToken = tokenKey ? process.env[tokenKey] : "";
+export const tokenCandidates = () => Object.keys(process.env).filter(k => /BLOB|READ_WRITE_TOKEN|STORE_ID/i.test(k));
+const useBlob = !!blobToken;
+const T = { token: blobToken };
 let blob;
 async function B() { return blob ||= await import("@vercel/blob"); }
 
@@ -22,7 +27,7 @@ async function localList(prefix) {
 export async function readJSON(prefix) {
   if (useBlob) {
     const { list } = await B();
-    const { blobs } = await list({ prefix, limit: 1000 });
+    const { blobs } = await list({ prefix, limit: 1000, ...T });
     if (!blobs.length) return null;
     blobs.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
     const r = await fetch(blobs[0].url, { cache: "no-store" });
@@ -38,11 +43,11 @@ export async function writeJSON(prefix, data) {
   const body = JSON.stringify(data);
   if (useBlob) {
     const { put, list, del } = await B();
-    await put(`${prefix}${Date.now()}.json`, body, { access: "public", addRandomSuffix: true, contentType: "application/json", cacheControlMaxAge: 60 });
-    const { blobs } = await list({ prefix, limit: 1000 });
+    await put(`${prefix}${Date.now()}.json`, body, { access: "public", addRandomSuffix: true, contentType: "application/json", cacheControlMaxAge: 60, ...T });
+    const { blobs } = await list({ prefix, limit: 1000, ...T });
     blobs.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
     const old = blobs.slice(5).map(b => b.url);
-    if (old.length) await del(old);
+    if (old.length) await del(old, T);
     return;
   }
   await mkdir(join(DATA, prefix), { recursive: true });
@@ -53,7 +58,7 @@ export async function writeJSON(prefix, data) {
 export async function putImage(name, bytes, contentType) {
   if (useBlob) {
     const { put } = await B();
-    const res = await put(`products/${name}`, bytes, { access: "public", addRandomSuffix: true, contentType });
+    const res = await put(`products/${name}`, bytes, { access: "public", addRandomSuffix: true, contentType, ...T });
     return res.url;
   }
   const file = `${Date.now()}-${name}`;
@@ -67,7 +72,7 @@ export async function removeImage(url) {
   if (useBlob) {
     if (!/\.blob\.vercel-storage\.com\//.test(url)) return;
     const { del } = await B();
-    await del(url).catch(() => {});
+    await del(url, T).catch(() => {});
     return;
   }
   if (url.startsWith("/.data/")) await rm(join(process.cwd(), url.slice(1))).catch(() => {});
