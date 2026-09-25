@@ -13,6 +13,7 @@
   $$("[data-ig]").forEach(a => a.href = S.instagram);
   $$("[data-tel]").forEach(a => a.href = "tel:" + S.phone);
   $$("[data-maps]").forEach(a => a.href = S.maps);
+  $$("[data-wa-hours]").forEach(a => a.href = wa("Ciao BL Store! Che orari fate oggi?"));
   $$("[data-season]").forEach(el => el.textContent = S.season);
   $$("[data-phone-label]").forEach(el => el.textContent = S.phoneLabel);
   $$("[data-handle]").forEach(el => el.textContent = S.handle);
@@ -83,12 +84,19 @@
       raf = requestAnimationFrame(() => {
         const r = home.getBoundingClientRect();
         const x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
-        tilt.style.transform = `perspective(1400px) rotateY(${x * 5}deg) rotateX(${-y * 4}deg)`;
+        tilt.style.transform = `perspective(1200px) rotateY(${x * 9}deg) rotateX(${-y * 6}deg)`;
       });
     });
     home.addEventListener("pointerleave", () => tilt.style.transform = "");
     tilt.style.transition = "transform .6s cubic-bezier(.16,1,.3,1)";
   }
+
+  /* sleeves drift against the scroll, like arms swinging past */
+  const sleeves = $$(".sleeve");
+  if (!reduce) addEventListener("scroll", () => {
+    const y = Math.min(scrollY, innerHeight);
+    sleeves.forEach((s, i) => s.style.transform = `translateY(${y * (i ? .28 : .18)}px)`);
+  }, { passive: true });
 
   /* marquee: duplicate content so the loop is seamless */
   $$("[data-marquee]").forEach(t => { t.innerHTML += t.innerHTML; });
@@ -140,15 +148,38 @@
     roller(num, pad(p.n)); setRoll(num, pad(p.n), { instant: true });
     const btn = $(".player__btn", li);
     btn.addEventListener("mouseenter", () => setRoll(num, pad(p.n), { spin: true }));
+    num._spin = () => setRoll(num, pad(p.n), { spin: true });
+    cardIO.observe(num);
     btn.addEventListener("click", () => openLocker(p));
     return li;
   }
+
+  /* every number flips once as its player enters the screen (the signature, also on touch) */
+  const cardIO = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { e.target._spin(); cardIO.unobserve(e.target); }
+  }), { threshold: .6 });
+
+  /* no row ends on an empty cell: the last player stretches to close it */
+  function closeRow() {
+    const items = $$(".player", grid);
+    items.forEach(li => { li.classList.remove("is-wide"); li.style.gridColumn = ""; });
+    const last = items[items.length - 1];
+    if (!last || items.length < 2) return;
+    const cs = getComputedStyle(grid);
+    const cols = cs.gridTemplateColumns.split(" ").length;
+    const colW = parseFloat(cs.gridTemplateColumns.split(" ")[0]), gap = parseFloat(cs.columnGap) || 0;
+    const at = Math.round((last.getBoundingClientRect().left - grid.getBoundingClientRect().left) / (colW + gap));
+    const span = cols - at;
+    if (span > 1) { last.style.gridColumn = `span ${span}`; last.classList.add("is-wide"); }
+  }
+  let rT; addEventListener("resize", () => { clearTimeout(rT); rT = setTimeout(closeRow, 120); });
 
   function render() {
     visible = current === "all" ? CAT : CAT.filter(p => p.cat === current);
     grid.innerHTML = "";
     visible.forEach((p, i) => { const li = card(p, i); if (i === 0 && visible.length > 2) li.classList.add("is-feature"); grid.appendChild(li); });
     empty.hidden = visible.length > 0;
+    closeRow();
   }
   function select(id) {
     current = id;
@@ -168,7 +199,8 @@
   function fillLocker(p) {
     const price = euro(p.price);
     L("img").src = p.img; L("img").alt = `${p.name}, ${p.variant}`;
-    L("brand").textContent = p.brand || "BL Store";
+    L("brand").textContent = p.brand || "";
+    L("brand").hidden = !p.brand;
     L("name").textContent = p.name;
     L("variant").textContent = p.variant;
     L("price").textContent = price || "Prezzo in store · chiedi su WhatsApp";

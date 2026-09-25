@@ -8,7 +8,9 @@
   <meta name="theme-color" content="#0b0b0c">
   <meta property="og:title" content="BL Store · Streetwear uomo a Cosenza">
   <meta property="og:description" content="Il roster dei capi in negozio. Via Cesare Marini 19, Cosenza.">
-  <meta property="og:image" content="assets/img/ig/p03.jpg">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://bl-store-sage.vercel.app/">
+  <meta property="og:image" content="https://bl-store-sage.vercel.app/assets/img/ig/p03.jpg">
   <link rel="icon" href="assets/img/ig/logo.jpg">
   <link rel="preload" href="assets/fonts/graduate.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="assets/css/style.css">
@@ -28,7 +30,7 @@
       <symbol id="i-prev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
       <symbol id="i-next" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
       <symbol id="i-star" viewBox="0 0 100 96"><polygon points="50,0 61.8,34.5 97.6,34.5 68.9,56.3 79.4,90.5 50,70 20.6,90.5 31.1,56.3 2.4,34.5 38.2,34.5"/></symbol>
-      <path id="arch-d" d="M 150 470 Q 720 60 1290 470"/>
+      <path id="arch-d" d="M 40 470 Q 720 30 1400 470"/>
       <path id="arch-m" d="M 18 300 Q 200 70 382 300"/>
     </defs>
   </svg>
@@ -57,21 +59,34 @@
       <div class="sleeve sleeve--r" aria-hidden="true"><span class="num" data-roll="9" data-intro></span></div>
 
       <div class="home__crest" data-tilt>
+        <div class="stage">
         <svg class="arch arch--d" viewBox="0 0 1440 520" aria-hidden="true">
           <text class="tw tw--outer"><textPath href="#arch-d" startOffset="50%" text-anchor="middle">BL STORE</textPath></text>
           <text class="tw tw--mid"><textPath href="#arch-d" startOffset="50%" text-anchor="middle">BL STORE</textPath></text>
           <text class="tw tw--face"><textPath href="#arch-d" startOffset="50%" text-anchor="middle">BL STORE</textPath></text>
           <text class="tw tw--stitch"><textPath href="#arch-d" startOffset="50%" text-anchor="middle">BL STORE</textPath></text>
         </svg>
-        <svg class="arch arch--m" viewBox="0 0 400 330" aria-hidden="true">
+        <svg class="arch arch--m" viewBox="0 84 400 246" aria-hidden="true">
           <text class="tw tw--outer"><textPath href="#arch-m" startOffset="50%" text-anchor="middle">BL STORE</textPath></text>
           <text class="tw tw--mid"><textPath href="#arch-m" startOffset="50%" text-anchor="middle">BL STORE</textPath></text>
           <text class="tw tw--face"><textPath href="#arch-m" startOffset="50%" text-anchor="middle">BL STORE</textPath></text>
           <text class="tw tw--stitch"><textPath href="#arch-m" startOffset="50%" text-anchor="middle">BL STORE</textPath></text>
         </svg>
+          <a class="garment" href="#roster" data-garment aria-label="Hoodie Blessed 17 con strass: guardalo nel roster">
+            <img src="assets/img/hero-blessed.png" alt="" width="574" height="385">
+            <span class="glint" style="--x:61%;--y:44%;--d:0s"></span>
+            <span class="glint" style="--x:79%;--y:37%;--d:.9s"></span>
+            <span class="glint" style="--x:70%;--y:66%;--d:1.7s"></span>
+            <span class="glint" style="--x:57%;--y:72%;--d:2.4s"></span>
+            <span class="glint" style="--x:24%;--y:27%;--d:1.2s"></span>
+            <span class="glint" style="--x:40%;--y:24%;--d:3s"></span>
+          </a>
+        </div>
 
         <div class="emblem">
-          <svg class="emblem__star" aria-hidden="true"><use href="#i-star"/></svg>
+          <svg class="emblem__star" viewBox="-12 -12 124 120" aria-hidden="true">
+            <use href="#i-star" class="st st--o"/><use href="#i-star" class="st st--m"/><use href="#i-star" class="st st--f"/>
+          </svg>
           <p class="emblem__line">Abbigliamento uomo</p>
           <p class="emblem__sub">Cosenza · Via Cesare Marini 19</p>
         </div>
@@ -98,7 +113,7 @@
       <div class="roster__head">
         <h2 id="roster-h" class="display">Roster</h2>
         <div class="roster__meta">
-          <p class="roster__count"><span class="num num--ink" data-count></span><span>capi in negozio<br><b data-season>FW 26/27</b></span></p>
+          <p class="roster__count"><span class="num num--ink" data-count></span><span>capi nel roster<br><b data-season>FW 26/27</b></span></p>
           <p class="roster__note">Ogni capo ha il suo numero. Aprilo per taglie e disponibilità, poi passa in store.</p>
         </div>
       </div>
@@ -113,7 +128,7 @@
     <section class="casa" id="casa" aria-labelledby="casa-h">
       <div class="casa__head">
         <h2 id="casa-h" class="display display--light">Giochiamo<br>in casa</h2>
-        <p class="casa__lead">I capi si provano qui. Passa in negozio, trovi il roster completo e le nuove uscite prima che finiscano su Instagram.</p>
+        <p class="casa__lead">I capi si provano qui. Passa in negozio: trovi il roster completo e tutte le taglie.</p>
       </div>
 
       <div class="casa__body">
@@ -124,7 +139,7 @@
             <span class="casa__city" data-city>87100 Cosenza CS</span>
           </address>
           <dl class="casa__facts">
-            <div><dt>Orari</dt><dd data-hours>Scrivici su WhatsApp per gli orari di oggi</dd></div>
+            <div><dt>Orari</dt><dd data-hours><a data-wa-hours href="#" target="_blank" rel="noopener">Scrivici su WhatsApp per gli orari di oggi</a></dd></div>
             <div><dt>Spedizioni</dt><dd>Info e spedizioni su WhatsApp</dd></div>
           </dl>
           <div class="casa__cta">
