@@ -162,15 +162,18 @@
   /* no row ends on an empty cell: the last player stretches to close it */
   function closeRow() {
     const items = $$(".player", grid);
-    items.forEach(li => { li.classList.remove("is-wide"); li.style.gridColumn = ""; });
+    items.forEach(li => { li.classList.remove("is-wide", "is-solo"); li.style.gridColumn = ""; });
     const last = items[items.length - 1];
     if (!last || items.length < 2) return;
-    const cs = getComputedStyle(grid);
-    const cols = cs.gridTemplateColumns.split(" ").length;
-    const colW = parseFloat(cs.gridTemplateColumns.split(" ")[0]), gap = parseFloat(cs.columnGap) || 0;
-    const at = Math.round((last.getBoundingClientRect().left - grid.getBoundingClientRect().left) / (colW + gap));
+    const cols = getComputedStyle(grid).gridTemplateColumns.split(" ").length;
+    const hasFeature = items[0].classList.contains("is-feature");
+    const featureCells = hasFeature ? (cols <= 2 ? cols : 4) : 1;
+    const before = featureCells + (items.length - 2);   // cells filled before the last player
+    const at = before % cols;
     const span = cols - at;
-    if (span > 1) { last.style.gridColumn = `span ${span}`; last.classList.add("is-wide"); }
+    last.style.gridColumn = `span ${span}`;
+    if (span === cols && span > 1) last.classList.add("is-solo");
+    else if (span > 1) last.classList.add("is-wide");
   }
   let rT; addEventListener("resize", () => { clearTimeout(rT); rT = setTimeout(closeRow, 120); });
 
