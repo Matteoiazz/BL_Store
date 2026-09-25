@@ -49,22 +49,20 @@
   <main id="top">
     <!-- BLACK BOX: la stanza nera con i neon dove il negozio fotografa i capi -->
     <section class="box" aria-labelledby="h1" data-box>
-      <span class="tube tube--l" aria-hidden="true"></span>
-      <span class="tube tube--r" aria-hidden="true"></span>
+      <span class="tube tube--l" data-tube aria-hidden="true"></span>
+      <span class="tube tube--r" data-tube aria-hidden="true"></span>
       <span class="floor" aria-hidden="true"></span>
 
       <div class="box__stage">
         <h1 id="h1" class="box__title"><span class="sr">BL Store, streetwear uomo a Cosenza</span><span aria-hidden="true">BL Store</span></h1>
-        <a class="garment" href="#drop" aria-label="Hoodie Blessed 17 con strass: guarda i capi">
-          <img class="garment__img" src="assets/img/hero-blessed.png" alt="" width="574" height="385">
-          <img class="garment__mirror" src="assets/img/hero-blessed.png" alt="" width="574" height="385">
-          <span class="glint" style="--x:61%;--y:44%;--d:0s"></span>
-          <span class="glint" style="--x:79%;--y:37%;--d:.9s"></span>
-          <span class="glint" style="--x:70%;--y:66%;--d:1.7s"></span>
-          <span class="glint" style="--x:57%;--y:72%;--d:2.4s"></span>
-          <span class="glint" style="--x:24%;--y:27%;--d:1.2s"></span>
-          <span class="glint" style="--x:40%;--y:24%;--d:3s"></span>
+        <a class="garment" href="#drop" data-display aria-label="Hoodie Blessed 17: apri la scheda">
+          <span class="garment__frame" data-display-frame>
+            <img class="garment__img" data-display-img src="assets/img/cut/p02.png" alt="" width="574" height="385">
+            <img class="garment__mirror" data-display-mirror src="assets/img/cut/p02.png" alt="" width="574" height="385">
+            <span data-glints></span>
+          </span>
         </a>
+        <p class="display"><span class="display__no">N°<span class="num" data-display-num>02</span></span><span class="display__name" data-display-name>Hoodie Blessed 17</span></p>
       </div>
 
       <div class="box__foot">
@@ -89,7 +87,7 @@
       <div class="head">
         <h2 id="drop-h" class="gothic">In store</h2>
         <div class="head__meta">
-          <p class="head__count"><b data-count>12</b> capi <span>· <span data-season>FW 26/27</span></span></p>
+          <p class="head__count"><b class="num" data-count>12</b> capi <span>· <span data-season>FW 26/27</span></span></p>
           <p class="head__note">Tocca un capo per taglie e disponibilità. I prezzi sono quelli del negozio.</p>
         </div>
       </div>
@@ -151,7 +149,7 @@
   </main>
 
   <footer class="foot">
-    <p class="foot__word" aria-hidden="true">BL Store</p>
+    <p class="foot__word" data-neon aria-hidden="true">BL Store</p>
     <div class="foot__row">
       <p>© <span data-year>2026</span> BL Store · Via Cesare Marini 19, Cosenza</p>
       <p>Foto: <a data-ig href="#" target="_blank" rel="noopener">@bl_store_official_</a></p>
@@ -164,7 +162,7 @@
       <button class="locker__close" data-close aria-label="Chiudi"><svg class="ico"><use href="#i-close"/></svg></button>
       <figure class="locker__img"><img data-l-img src="assets/img/ig/p02.jpg" alt="" width="640" height="640"></figure>
       <div class="locker__info">
-        <p class="locker__no" data-l-num></p>
+        <p class="locker__no">N°<span class="num" data-l-num>00</span></p>
         <h3 id="locker-name" class="locker__name" data-l-name></h3>
         <p class="locker__variant" data-l-variant></p>
         <p class="locker__brand" data-l-brand></p>
