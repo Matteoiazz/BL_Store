@@ -16,7 +16,7 @@ window.BL_STORE = {
   handle: "@bl_store_official_",
   address: "Via Cesare Marini, 19",
   city: "87100 Cosenza CS",
-  maps: "https://www.google.com/maps/search/?api=1&query=Via+Cesare+Marini+19+Cosenza",
+  maps: "https://www.google.com/maps/dir/?api=1&destination=39.2990605,16.2547004",
   hours: null, // es. "Lun–Sab 9:30–13:00 / 16:30–20:30"
   season: "FW 26/27"
 };
